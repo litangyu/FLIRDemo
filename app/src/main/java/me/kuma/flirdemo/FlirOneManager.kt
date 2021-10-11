@@ -45,32 +45,6 @@ object FlirOneManager : DiscoveryEventListener, ConnectionStatusListener {
   private val status = BehaviorProcessor.create<Status>()
   private val asyncProcessor = PublishProcessor.create<AsyncBlock>()
 
-//  var currentImageModeIndex: Int
-//    set(value) {
-//      val applicationModel = ARouter.getInstance().navigation(IApplicationModel::class.java)
-//      val sp = applicationModel.provideSharedPreferences()
-//      val impl = StringPreferenceImpl(sp, "current_image_mode_index")
-//      impl.set(value.toString())
-//    }
-//    get() {
-//      val applicationModel = ARouter.getInstance().navigation(IApplicationModel::class.java)
-//      val sp = applicationModel.provideSharedPreferences()
-//      val impl = StringPreferenceImpl(sp, "current_image_mode_index")
-//      return if (impl.isSet && !TextUtils.isEmpty(impl.get())) impl.get().toIntOrNull() ?: 0 else 0
-//    }
-
-//  private val imageModeList: MutableList<ImageMode> by lazy {
-//    mutableListOf(
-//      ImageMode("红外", FusionMode.THERMAL_ONLY),
-//      ImageMode("可见光", FusionMode.VISUAL_ONLY),
-//      ImageMode("混合", FusionMode.BLENDING),
-//      ImageMode("MSX", FusionMode.MSX),
-//      ImageMode("红外融合", FusionMode.THERMAL_FUSION),
-//      ImageMode("画中画", FusionMode.PICTURE_IN_PICTURE),
-//      ImageMode("彩色夜视", FusionMode.COLOR_NIGHT_VISION),
-//    )
-//  }
-
   init {
     asyncDisposable = asyncProcessor.subscribeOn(Schedulers.io())
       .observeOn(Schedulers.io())
@@ -143,6 +117,12 @@ object FlirOneManager : DiscoveryEventListener, ConnectionStatusListener {
           val highTemperatureRangeIndex = 1 /* 0.0C - 400.0C */
           temperatureRangeControl.selectedIndex().set(highTemperatureRangeIndex, {
             Timber.d("Select range 'high: 0.0C - 400.0C'")
+
+            temperatureRangeControl.selectedIndex().get({
+              Timber.d("Current range index $it")
+            }, {
+              Timber.e("Get temperature range failed: $it")
+            })
           }, {
             Timber.e("Set temperature range failed: $it")
           })
@@ -191,6 +171,22 @@ object FlirOneManager : DiscoveryEventListener, ConnectionStatusListener {
   }
 
   fun status(): BehaviorProcessor<Status> = status
+
+  fun getCurrentTemperatureRange() {
+    if (Status.Connected == status.value || Status.Streaming == status.value) {
+      val temperatureRangeControl = connectedCamera?.remoteControl?.temperatureRange
+      temperatureRangeControl?.selectedIndex()?.get({ rangeIndex ->
+        val rangeStr: String = when (rangeIndex) {
+          0 -> "-20.0C - 120.0C"
+          1 -> "0.0C - 400.0C"
+          else -> "Unknown"
+        }
+        Timber.d("Current temperature range index $rangeIndex ($rangeStr)")
+      }, {
+        Timber.e("Get temperature range failed: $it")
+      })
+    }
+  }
 
   override fun onCameraFound(identity: Identity) {
     async {

@@ -24,6 +24,7 @@ class App : Application() , DiscoveryEventListener {
 
   override fun onCreate() {
     super.onCreate()
+    Timber.plant(Timber.DebugTree())
 
     //init thermal sdk
     val enableLoggingInDebug = if (BuildConfig.DEBUG) ThermalLog.LogLevel.DEBUG else ThermalLog.LogLevel.NONE

@@ -245,6 +245,7 @@ class LivePresenter(view: LiveActivity) : DiscoveryEventListener, ThermalImageSt
       if ((x >= 0 && x <= thermalImageWidth) && (y >= 0 && y <= thermalImageHeight)) {
         val focusPoint = com.flir.thermalsdk.image.Point(x.toInt(), y.toInt())
         val thermalValue = it.getValueAt(focusPoint).asCelsius()
+        FlirOneManager.getCurrentTemperatureRange()
         Timber.d("value: ${thermalValue.value} unit: ${thermalValue.unit} state: ${thermalValue.state}")
         temperature.onNext(thermalValue.toString())
       }

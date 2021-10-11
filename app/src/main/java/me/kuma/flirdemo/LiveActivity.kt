@@ -33,6 +33,11 @@ class LiveActivity : AppCompatActivity() {
     presenter = LivePresenter(this)
     observeData()
 
+    binding.cl.setOnFocusPointCoordinateChangeListener(object : CrossLocator.OnFocusPointCoordinateChangeListener {
+      override fun onCoordinateChange(x: Int, y: Int) {
+        presenter.onFocusPointCoordinateChange(x, y)
+      }
+    })
     binding.glLive.displayFPS(true)
     val previewWidth = QMUIDisplayHelper.getScreenWidth(this).toFloat()
     val previewHeight = (previewWidth / 0.75).toFloat()
